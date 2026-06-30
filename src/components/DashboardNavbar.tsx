@@ -37,9 +37,11 @@ export default function DashboardNavbar() {
         {/* Brand */}
         <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-premium flex items-center justify-center text-white font-bold text-sm">
-              CC
-            </div>
+            <img 
+              src="https://res.cloudinary.com/dsqxboxoc/image/upload/v1782801547/campus_logo_oj2pcn.png" 
+              alt="CampusConnect Logo" 
+              className="w-8 h-8 object-contain"
+            />
             <span className="font-bold text-base tracking-tight hidden sm:inline">
               Campus<span className="text-primary font-extrabold">Connect</span>
             </span>

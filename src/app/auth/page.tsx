@@ -160,9 +160,11 @@ function AuthContent() {
       </div>
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center px-4">
-        <div className="inline-flex w-12 h-12 rounded-2xl bg-gradient-premium items-center justify-center text-white font-bold text-xl shadow-lg shadow-primary/20 mb-4 animate-float">
-          CC
-        </div>
+        <img 
+          src="https://res.cloudinary.com/dsqxboxoc/image/upload/v1782801547/campus_logo_oj2pcn.png" 
+          alt="CampusConnect Logo" 
+          className="w-12 h-12 object-contain mx-auto mb-4 animate-float"
+        />
         <h2 className="text-3xl font-extrabold tracking-tight">Welcome to CampusConnect</h2>
         <p className="mt-2 text-sm text-muted font-medium">
           Your portal to college hackathons, fests, and digital credentials.
