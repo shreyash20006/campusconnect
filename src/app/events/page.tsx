@@ -3,11 +3,10 @@
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import DashboardNavbar from '@/components/DashboardNavbar';
-import { MOCK_EVENTS, CollegeEvent } from '@/lib/data';
+import { MOCK_EVENTS } from '@/lib/data';
 import { 
   Search, SlidersHorizontal, Calendar, MapPin, 
-  Tag, IndianRupee, ArrowUpDown, ChevronLeft, 
-  ChevronRight, Sparkles, HelpCircle 
+  ChevronLeft, ChevronRight, HelpCircle 
 } from 'lucide-react';
 import { formatCurrency, formatDateTime } from '@/lib/utils';
 
@@ -80,7 +79,6 @@ export default function EventsDiscovery() {
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
-      // Scroll to top of filters
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
@@ -92,11 +90,11 @@ export default function EventsDiscovery() {
       <div className="flex-1 max-w-7xl w-full mx-auto px-6 py-8 space-y-8">
         
         {/* Banner Section */}
-        <div className="relative rounded-3xl overflow-hidden bg-gradient-premium py-10 px-8 text-white shadow-xl shadow-blue-500/5">
+        <div className="relative rounded-[20px] overflow-hidden bg-gradient-premium py-10 px-8 text-white shadow-xl shadow-primary/5">
           <div className="absolute inset-0 bg-black/25 backdrop-blur-[1px]" />
           <div className="relative z-10 max-w-2xl text-left space-y-2">
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Campus Events Board</h1>
-            <p className="text-xs md:text-sm text-white/80 leading-normal">
+            <p className="text-xs md:text-sm text-white/80 leading-normal font-medium">
               Browse technical hackathons, cultural fests, workshops, and sports meets. Secure your ticket instantly with simple click-to-registers and secure Cashfree checkouts.
             </p>
           </div>
@@ -114,7 +112,7 @@ export default function EventsDiscovery() {
                 placeholder="Search events by title or keywords..."
                 value={searchQuery}
                 onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-                className="w-full bg-background border border-border rounded-xl pl-10 pr-4 py-2.5 text-xs shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 text-foreground"
+                className="w-full bg-background border border-border rounded-xl pl-10 pr-4 py-2.5 text-xs shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/40 text-foreground"
               />
             </div>
 
@@ -124,7 +122,7 @@ export default function EventsDiscovery() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className="bg-background border border-border rounded-xl px-3 py-2.5 text-xs shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 text-muted-foreground font-semibold"
+                className="bg-background border border-border rounded-xl px-3 py-2.5 text-xs shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/40 text-muted-foreground font-semibold"
               >
                 <option value="date-asc">Date: Soonest First</option>
                 <option value="date-desc">Date: Latest First</option>
@@ -143,7 +141,7 @@ export default function EventsDiscovery() {
                   onClick={() => { setSelectedCategory(cat); setCurrentPage(1); }}
                   className={`px-3 py-1.5 rounded-xl text-xs font-semibold tracking-wide transition-all cursor-pointer ${
                     selectedCategory === cat
-                      ? 'bg-blue-600/10 dark:bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/15'
+                      ? 'bg-primary/10 text-primary border border-primary/15 font-bold'
                       : 'hover:bg-zinc-100 dark:hover:bg-zinc-800/40 text-muted-foreground border border-transparent'
                   }`}
                 >
@@ -172,7 +170,7 @@ export default function EventsDiscovery() {
         </div>
 
         {/* Events Grid */}
-        {paginatedEvents.length === 0 ? (
+        {filteredEvents.length === 0 ? (
           <div className="premium-card p-12 text-center text-sm text-zinc-400 flex flex-col items-center gap-2">
             <HelpCircle className="w-10 h-10 text-zinc-500/30" />
             <span className="font-semibold">No events matched your search criteria</span>
@@ -204,7 +202,7 @@ export default function EventsDiscovery() {
                     </span>
 
                     {/* Price pill */}
-                    <span className="absolute bottom-3.5 right-3.5 px-2.5 py-0.5 rounded-lg bg-blue-500 text-white text-[11px] font-bold shadow-md">
+                    <span className="absolute bottom-3.5 right-3.5 px-2.5 py-0.5 rounded-lg bg-primary text-white text-[11px] font-bold shadow-md">
                       {event.price === 0 ? 'FREE' : formatCurrency(event.price)}
                     </span>
                   </div>
@@ -215,7 +213,7 @@ export default function EventsDiscovery() {
                       <h3 className="font-extrabold text-base leading-snug group-hover:text-primary transition-colors line-clamp-1">
                         {event.title}
                       </h3>
-                      <p className="text-xs text-zinc-500 line-clamp-2 leading-relaxed">
+                      <p className="text-xs text-zinc-500 line-clamp-2 leading-relaxed font-medium">
                         {event.short_description}
                       </p>
                     </div>
@@ -248,7 +246,7 @@ export default function EventsDiscovery() {
                     ) : (
                       <Link
                         href={`/events/${event.id}/register`}
-                        className="w-full py-2.5 rounded-xl bg-primary hover:bg-blue-600 text-white text-center text-xs font-semibold transition-colors flex items-center justify-center gap-0.5"
+                        className="w-full py-2.5 rounded-xl bg-primary hover:bg-rose-600 text-white text-center text-xs font-semibold transition-colors flex items-center justify-center gap-0.5"
                       >
                         Register Now
                       </Link>

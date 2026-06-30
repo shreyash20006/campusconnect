@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 @theme {
-  --radius-3xl: 24px;
-  --radius-24: 24px;
+  --radius-3xl: 20px;
+  --radius-24: 20px;
   
   --color-primary: var(--primary);
   --color-border: var(--border);
@@ -13,69 +13,69 @@
 }
 
 :root {
-  --background: #fbfbfd;
-  --foreground: #1d1d1f;
+  --background: #F8F9FC;
+  --foreground: #111827;
   --card: #ffffff;
-  --card-foreground: #1d1d1f;
-  --border: #e4e4e7;
-  --primary: #2563eb;
-  --muted: #71717a;
-  --glass-bg: rgba(255, 255, 255, 0.4);
-  --glass-border: rgba(228, 228, 231, 0.6);
-  --glow-color: rgba(37, 99, 235, 0.05);
+  --card-foreground: #111827;
+  --border: #e8ebf3;
+  --primary: #FF4D6D;
+  --muted: #6b7280;
+  --glass-bg: rgba(255, 255, 255, 0.65);
+  --glass-border: rgba(232, 235, 243, 0.7);
+  --glow-color: rgba(255, 77, 109, 0.06);
 }
 
 .dark, :root[class~="dark"] {
-  --background: #09090b;
-  --foreground: #fafafa;
-  --card: #0c0c0f;
-  --card-foreground: #fafafa;
-  --border: #1e1e24;
-  --primary: #3b82f6;
-  --muted: #a1a1aa;
-  --glass-bg: rgba(12, 12, 15, 0.6);
-  --glass-border: rgba(30, 30, 36, 0.7);
-  --glow-color: rgba(59, 130, 246, 0.15);
+  --background: #0b0b0e;
+  --foreground: #f3f4f6;
+  --card: #121216;
+  --card-foreground: #f3f4f6;
+  --border: #1f2029;
+  --primary: #FF4D6D;
+  --muted: #9ca3af;
+  --glass-bg: rgba(18, 18, 22, 0.75);
+  --glass-border: rgba(31, 32, 41, 0.75);
+  --glow-color: rgba(255, 77, 109, 0.12);
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
   overflow-x: hidden;
 }
 
 /* Glassmorphism panel utility */
 .glass-panel {
   background: var(--glass-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--glass-border);
 }
 
-/* Premium Rounded 24px Card */
+/* BookMyShow Inspired Card styling */
 .premium-card {
   background-color: var(--card);
   border: 1px solid var(--border);
-  border-radius: 24px;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.02);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 20px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.03);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .premium-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 40px var(--glow-color);
-  border-color: var(--primary);
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px var(--glow-color);
+  border-color: rgba(255, 77, 109, 0.25);
 }
 
-/* Custom Gradients */
+/* Custom Gradients: Orange -> Pink -> Purple */
 .bg-gradient-premium {
-  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%);
+  background: linear-gradient(135deg, #FF7E5F 0%, #FF4D6D 50%, #7F00FF 100%);
 }
 
 .text-gradient-premium {
-  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%);
+  background: linear-gradient(135deg, #FF7E5F 0%, #FF4D6D 50%, #7F00FF 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -83,20 +83,14 @@ body {
 .bg-grid-pattern {
   background-size: 40px 40px;
   background-image: 
-    linear-gradient(to right, rgba(128, 128, 128, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(128, 128, 128, 0.05) 1px, transparent 1px);
-}
-
-.dark .bg-grid-pattern {
-  background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    linear-gradient(to right, rgba(255, 77, 109, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 77, 109, 0.03) 1px, transparent 1px);
 }
 
 /* Animations */
 @keyframes float {
   0% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
+  50% { transform: translateY(-8px); }
   100% { transform: translateY(0px); }
 }
 
@@ -106,8 +100,8 @@ body {
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {

@@ -4,15 +4,12 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import DashboardNavbar from '@/components/DashboardNavbar';
 import { useAuth } from '@/providers/AuthProvider';
-import { MOCK_EVENTS, Registration, Ticket, Certificate, CollegeEvent } from '@/lib/data';
+import { MOCK_EVENTS, Registration, Ticket, Certificate } from '@/lib/data';
 import { 
-  Calendar, Ticket as TicketIcon, Award, ShieldAlert, 
-  Sparkles, ClipboardList, CheckCircle2, User, Trophy, 
-  ArrowRight, ArrowUpRight, Zap, RefreshCw, Star, ChevronRight,
-  TrendingUp, CalendarDays, Wallet
+  Award, Ticket as TicketIcon, Sparkles, ClipboardList, CheckCircle2, User, 
+  ArrowUpRight, Zap, Star, TrendingUp, CalendarDays, ChevronRight
 } from 'lucide-react';
-import { formatCurrency, formatDateTime } from '@/lib/utils';
-import { motion } from 'framer-motion';
+import { formatDateTime } from '@/lib/utils';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function StudentDashboard() {
@@ -149,9 +146,9 @@ export default function StudentDashboard() {
         
         {/* Header Hero Greeting */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
+          <div className="text-left">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-blue-500 uppercase tracking-widest bg-blue-500/10 px-2.5 py-0.5 rounded-md">
+              <span className="text-xs font-bold text-primary uppercase tracking-widest bg-primary/10 px-2.5 py-0.5 rounded-md">
                 Active Student Session
               </span>
               <span className="text-xs text-muted flex items-center gap-1">
@@ -160,19 +157,19 @@ export default function StudentDashboard() {
               </span>
             </div>
             <h1 className="text-3xl font-extrabold tracking-tight mt-1">Hello, {user.name}!</h1>
-            <p className="text-sm text-zinc-500 mt-1">Track registrations, verify certificates, and coordinate staff tasks.</p>
+            <p className="text-sm text-zinc-500 mt-1 font-medium">Track registrations, verify certificates, and coordinate staff tasks.</p>
           </div>
           
           <div className="flex gap-2">
             <Link 
               href="/volunteer" 
-              className="px-4.5 py-2.5 rounded-xl border border-pink-500/30 text-pink-500 bg-pink-500/5 hover:bg-pink-500/10 font-semibold text-xs shadow-sm transition-colors flex items-center gap-1.5"
+              className="px-4.5 py-2.5 rounded-xl border border-primary/20 text-primary bg-primary/5 hover:bg-primary/10 font-bold text-xs shadow-sm transition-colors flex items-center gap-1.5 cursor-pointer"
             >
               <User className="w-4 h-4" /> Go to Volunteer Portal
             </Link>
             <Link 
               href="/events" 
-              className="px-4.5 py-2.5 rounded-xl bg-primary hover:bg-blue-600 text-white font-semibold text-xs shadow-sm transition-colors flex items-center gap-1.5"
+              className="px-4.5 py-2.5 rounded-xl bg-primary hover:bg-rose-600 text-white font-bold text-xs shadow-sm transition-colors flex items-center gap-1.5 cursor-pointer"
             >
               Explore Events <ArrowUpRight className="w-4 h-4" />
             </Link>
@@ -183,20 +180,20 @@ export default function StudentDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           
           {/* XP points */}
-          <div className="premium-card p-5 space-y-2 bg-gradient-to-br from-indigo-500/10 via-card to-zinc-950/80 border border-indigo-500/25 relative overflow-hidden">
-            <div className="absolute top-2 right-2 text-indigo-500/10">
-              <Star className="w-16 h-16 fill-indigo-500" />
+          <div className="premium-card p-5 space-y-2 bg-gradient-to-br from-primary/10 via-card to-zinc-950/20 border border-primary/15 relative overflow-hidden">
+            <div className="absolute top-2 right-2 text-primary/10">
+              <Star className="w-16 h-16 fill-primary" />
             </div>
-            <div className="flex justify-between items-center text-xs text-indigo-400 font-bold uppercase tracking-wider">
+            <div className="flex justify-between items-center text-xs text-primary font-bold uppercase tracking-wider">
               <span>Experience Points</span>
-              <Star className="w-4 h-4 text-indigo-500 fill-indigo-500" />
+              <Star className="w-4 h-4 text-primary fill-primary animate-pulse" />
             </div>
-            <div className="text-3xl font-extrabold text-foreground">{xpPoints} <span className="text-xs font-semibold text-muted">XP</span></div>
-            <p className="text-[10px] text-zinc-400">Earned by checking in and submitting certifications.</p>
+            <div className="text-3xl font-extrabold text-foreground text-left">{xpPoints} <span className="text-xs font-semibold text-muted">XP</span></div>
+            <p className="text-[10px] text-zinc-400 text-left">Earned by checking in and submitting certifications.</p>
           </div>
 
           {/* Event Streak */}
-          <div className="premium-card p-5 space-y-2 bg-gradient-to-br from-amber-500/10 via-card to-zinc-950/80 border border-amber-500/25 relative overflow-hidden">
+          <div className="premium-card p-5 space-y-2 bg-gradient-to-br from-amber-500/10 via-card to-zinc-950/20 border border-amber-500/15 relative overflow-hidden">
             <div className="absolute top-2 right-2 text-amber-500/10">
               <Zap className="w-16 h-16 fill-amber-500" />
             </div>
@@ -204,28 +201,28 @@ export default function StudentDashboard() {
               <span>Event Streak</span>
               <Zap className="w-4 h-4 text-amber-500 fill-amber-500 animate-bounce" />
             </div>
-            <div className="text-3xl font-extrabold text-foreground">{streakCount} <span className="text-xs font-semibold text-muted">events</span></div>
-            <p className="text-[10px] text-zinc-400">Keep attending college meets to maintain your hot streak!</p>
+            <div className="text-3xl font-extrabold text-foreground text-left">{streakCount} <span className="text-xs font-semibold text-muted">events</span></div>
+            <p className="text-[10px] text-zinc-400 text-left">Keep attending college meets to maintain your streak!</p>
           </div>
 
           {/* Certificate Ledger */}
           <div className="premium-card p-5 space-y-2 bg-card">
             <div className="flex justify-between items-center text-xs text-zinc-400 font-bold uppercase tracking-wider">
               <span>Verified Credentials</span>
-              <Award className="w-4.5 h-4.5 text-amber-500" />
+              <Award className="w-4.5 h-4.5 text-primary" />
             </div>
-            <div className="text-3xl font-extrabold text-foreground">{certificatesCount}</div>
-            <p className="text-[10px] text-zinc-500 leading-normal">Digitally verified via SHA-256 signatures.</p>
+            <div className="text-3xl font-extrabold text-foreground text-left">{certificatesCount}</div>
+            <p className="text-[10px] text-zinc-500 text-left leading-normal">Digitally verified via SHA-256 signatures.</p>
           </div>
 
           {/* Registered Events */}
           <div className="premium-card p-5 space-y-2 bg-card">
             <div className="flex justify-between items-center text-xs text-zinc-400 font-bold uppercase tracking-wider">
               <span>Registrations</span>
-              <ClipboardList className="w-4.5 h-4.5 text-blue-500" />
+              <ClipboardList className="w-4.5 h-4.5 text-primary" />
             </div>
-            <div className="text-3xl font-extrabold text-foreground">{registrations.length}</div>
-            <p className="text-[10px] text-zinc-500">Free & paid events enrolled.</p>
+            <div className="text-3xl font-extrabold text-foreground text-left">{registrations.length}</div>
+            <p className="text-[10px] text-zinc-500 text-left">Free & paid events enrolled.</p>
           </div>
 
         </div>
@@ -239,7 +236,7 @@ export default function StudentDashboard() {
             {/* Active passes */}
             <div className="space-y-4">
               <h2 className="text-lg font-bold tracking-tight flex items-center gap-2">
-                <TicketIcon className="w-4.5 h-4.5 text-purple-500" />
+                <TicketIcon className="w-4.5 h-4.5 text-primary" />
                 <span>My Active Digital Passes</span>
               </h2>
 
@@ -258,7 +255,7 @@ export default function StudentDashboard() {
                     if (!event) return null;
                     return (
                       <div key={ticket.id} className="premium-card p-5 bg-card/60 relative overflow-hidden flex flex-col justify-between group">
-                        <div className="absolute -top-12 -right-12 w-24 h-24 rounded-full bg-purple-500/10 blur-xl group-hover:bg-purple-500/15 transition-colors" />
+                        <div className="absolute -top-12 -right-12 w-24 h-24 rounded-full bg-primary/5 blur-xl group-hover:bg-primary/10 transition-colors" />
                         
                         <div className="space-y-2.5">
                           <div className="flex justify-between items-start">
@@ -300,7 +297,7 @@ export default function StudentDashboard() {
             {/* Verified Certificates */}
             <div className="space-y-4">
               <h2 className="text-lg font-bold tracking-tight flex items-center gap-2">
-                <Award className="w-4.5 h-4.5 text-amber-500" />
+                <Award className="w-4.5 h-4.5 text-primary" />
                 <span>My Earned Credentials</span>
               </h2>
 
@@ -313,13 +310,13 @@ export default function StudentDashboard() {
                   {certificates.map((cert) => {
                     const event = cert.registration?.event;
                     return (
-                      <div key={cert.id} className="premium-card p-5 bg-card/60 relative overflow-hidden flex flex-col justify-between group border-l-4 border-l-amber-500">
+                      <div key={cert.id} className="premium-card p-5 bg-card/60 relative overflow-hidden flex flex-col justify-between group border-l-4 border-l-primary">
                         <div className="space-y-2.5">
                           <div className="flex justify-between items-start">
                             <span className="text-[10px] px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-400 font-mono">
                               {cert.certificate_id}
                             </span>
-                            <span className="text-[9px] uppercase font-bold tracking-wider text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
+                            <span className="text-[9px] uppercase font-bold tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
                               Verified PDF
                             </span>
                           </div>
@@ -378,7 +375,7 @@ export default function StudentDashboard() {
                         color: '#fafafa'
                       }} 
                     />
-                    <Line type="monotone" dataKey="attended" stroke="#3b82f6" strokeWidth={2.5} activeDot={{ r: 6 }} />
+                    <Line type="monotone" dataKey="attended" stroke="#FF4D6D" strokeWidth={2.5} activeDot={{ r: 6 }} />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -419,8 +416,8 @@ export default function StudentDashboard() {
             {/* Recommendations */}
             <div className="space-y-4">
               <h2 className="text-lg font-bold tracking-tight text-left flex items-center gap-1.5">
-                <Sparkles className="w-4.5 h-4.5 text-blue-500 animate-pulse" />
-                <span>Personalized Matches</span>
+                <Sparkles className="w-4.5 h-4.5 text-primary animate-pulse" />
+                <span>Recommended for You</span>
               </h2>
 
               <div className="space-y-3">

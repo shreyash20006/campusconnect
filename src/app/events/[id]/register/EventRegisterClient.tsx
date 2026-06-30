@@ -2,22 +2,39 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import DashboardNavbar from '@/components/DashboardNavbar';
 import { useAuth } from '@/providers/AuthProvider';
 import { CollegeEvent, Registration, Ticket } from '@/lib/data';
 import { 
-  ArrowLeft, Calendar, User, Phone, Mail, 
-  MapPin, ShieldAlert, CreditCard, Sparkles, 
-  Trash2, Plus, Info, CheckCircle2, XCircle, Users, Clock
+  ArrowLeft, User, Phone, Mail, CreditCard, Sparkles, 
+  Trash2, Plus, Info, CheckCircle2, XCircle, Users, Clock, ShieldCheck
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+
+// Mock Database of Registered College PRNs
+const VALID_PRN_LIST = [
+  'PRN202410293',
+  'PRN202410294',
+  'PRN202410295',
+  'PRN202410296',
+  'PRN202400112',
+  'PRN202400113',
+  'PRN202400114',
+  'PRN202611223'
+];
 
 export default function EventRegisterClient({ event }: { event: CollegeEvent }) {
   const { user } = useAuth();
   const router = useRouter();
 
   // Form states
+  const [prnInput, setPrnInput] = useState('');
+  const [isVerifyingPrn, setIsVerifyingPrn] = useState(false);
+  const [prnVerified, setPrnVerified] = useState(false);
+  const [prnCheckFailed, setPrnCheckFailed] = useState(false);
+
   const [emergencyContact, setEmergencyContact] = useState('');
   const [teamName, setTeamName] = useState('');
   const [teamMembers, setTeamMembers] = useState<{ name: string; prn: string; email: string; phone: string }[]>([]);
@@ -37,11 +54,17 @@ export default function EventRegisterClient({ event }: { event: CollegeEvent }) 
   useEffect(() => {
     if (user) {
       setEmergencyContact(user.phone || '');
+      if (user.prn) {
+        setPrnInput(user.prn);
+        // Pre-verify if user has a standard preset PRN
+        if (VALID_PRN_LIST.includes(user.prn)) {
+          setPrnVerified(true);
+        }
+      }
     }
 
     // Determine if event is full to put on waitlist
     if (event.registration_limit) {
-      // Look at existing registrations in localStorage to count how many approved registrations exist
       let approvedCount = 0;
       const storedKeys = Object.keys(localStorage).filter(k => k.startsWith('cc_registrations_'));
       storedKeys.forEach((key) => {
@@ -57,6 +80,22 @@ export default function EventRegisterClient({ event }: { event: CollegeEvent }) 
   }, [user, event]);
 
   if (!user) return null;
+
+  const handleVerifyPRN = () => {
+    setIsVerifyingPrn(true);
+    setPrnCheckFailed(false);
+    
+    setTimeout(() => {
+      if (VALID_PRN_LIST.includes(prnInput.trim())) {
+        setPrnVerified(true);
+        setPrnCheckFailed(false);
+      } else {
+        setPrnVerified(false);
+        setPrnCheckFailed(true);
+      }
+      setIsVerifyingPrn(false);
+    }, 900);
+  };
 
   const handleAddMember = () => {
     if (teamMembers.length + 1 >= event.max_team_size) return;
@@ -75,11 +114,15 @@ export default function EventRegisterClient({ event }: { event: CollegeEvent }) 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!prnVerified) {
+      setError('Please verify your PRN ID against the college database before registering.');
+      return;
+    }
+
     setError(null);
     setIsSubmitting(true);
 
     try {
-      // If it's waitlisted, register with waitlisted status
       if (isWaitlisted) {
         const localRegsKey = `cc_registrations_${user.id}`;
         const existingRegs = JSON.parse(localStorage.getItem(localRegsKey) || '[]');
@@ -99,7 +142,6 @@ export default function EventRegisterClient({ event }: { event: CollegeEvent }) 
         
         localStorage.setItem(localRegsKey, JSON.stringify([newReg, ...existingRegs]));
         
-        // Add waitlist notification
         const localNotifsKey = `cc_notifications_${user.id}`;
         const existingNotifs = JSON.parse(localStorage.getItem(localNotifsKey) || '[]');
         const newNotif = {
@@ -117,10 +159,8 @@ export default function EventRegisterClient({ event }: { event: CollegeEvent }) 
         return;
       }
 
-      // Check if approval required is active on this event (mock check or event field)
       const approvalRequired = event.approval_required || false;
 
-      // 1. Trigger order creation
       const res = await fetch('/api/payments/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -130,9 +170,9 @@ export default function EventRegisterClient({ event }: { event: CollegeEvent }) 
           name: user.name,
           email: user.email,
           phone: user.phone || '9999999999',
-          prn: user.prn || '',
-          department: user.department || '',
-          semester: user.semester || '',
+          prn: prnInput,
+          department: user.department || 'Computer Science',
+          semester: user.semester || '4',
           emergencyContact,
           teamName: event.max_team_size > 1 ? teamName : null,
           teamMembers: event.max_team_size > 1 ? teamMembers : []
@@ -180,7 +220,6 @@ export default function EventRegisterClient({ event }: { event: CollegeEvent }) 
           localStorage.setItem(localTicketsKey, JSON.stringify([newTicket, ...existingTickets]));
           router.push(`/tickets/${data.ticketId}?status=success`);
         } else {
-          // Push notification about pending approval
           const localNotifsKey = `cc_notifications_${user.id}`;
           const existingNotifs = JSON.parse(localStorage.getItem(localNotifsKey) || '[]');
           const newNotif = {
@@ -231,7 +270,7 @@ export default function EventRegisterClient({ event }: { event: CollegeEvent }) 
             cf_payment_id: `mock_tx_${Math.random().toString(36).substring(2, 9).toUpperCase()}`,
             payment_status: success ? 'SUCCESS' : 'FAILED',
             payment_amount: event.price,
-            payment_method: { upi: { upi_id: `${user.prn || 'student'}@okaxis` } }
+            payment_method: { upi: { upi_id: `${prnInput || 'student'}@okaxis` } }
           }
         }
       };
@@ -263,14 +302,14 @@ export default function EventRegisterClient({ event }: { event: CollegeEvent }) 
     <div className="min-h-screen bg-background flex flex-col text-left">
       <DashboardNavbar />
 
-      <div className="flex-1 max-w-3xl w-full mx-auto px-6 py-6 space-y-6">
+      <div className="flex-1 max-w-2xl w-full mx-auto px-6 py-6 space-y-6">
         
         {/* Back Link */}
         <button 
           onClick={() => router.back()}
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted hover:text-foreground transition-colors cursor-pointer"
         >
-          <ArrowLeft className="w-3.5 h-3.5" /> Back to Event Details
+          <ArrowLeft className="w-3.5 h-3.5" /> Back to Details
         </button>
 
         {/* Header Summary */}
@@ -281,7 +320,7 @@ export default function EventRegisterClient({ event }: { event: CollegeEvent }) 
             className="w-16 h-16 rounded-2xl object-cover border border-border"
           />
           <div>
-            <span className="text-[10px] px-2 py-0.5 rounded bg-blue-500/10 text-blue-500 font-bold uppercase tracking-wider">
+            <span className="text-[10px] px-2.5 py-0.5 rounded bg-primary/10 text-primary font-bold uppercase tracking-wider">
               {event.category}
             </span>
             <h1 className="text-xl font-extrabold tracking-tight mt-1">Register for {event.title}</h1>
@@ -297,7 +336,7 @@ export default function EventRegisterClient({ event }: { event: CollegeEvent }) 
         )}
 
         {isWaitlisted && (
-          <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex gap-3 text-amber-500 text-xs leading-normal">
+          <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 flex gap-3 text-amber-500 text-xs leading-normal">
             <Clock className="w-5 h-5 shrink-0 mt-0.5" />
             <div>
               <span className="font-extrabold block">Seats Limit Reached (Waitlist Active)</span>
@@ -306,102 +345,150 @@ export default function EventRegisterClient({ event }: { event: CollegeEvent }) 
           </div>
         )}
 
-        {/* Registration Form */}
-        <form onSubmit={handleSubmit} className="space-y-6">
-          
-          {/* Profile Pre-filled Section */}
-          <div className="premium-card p-6 bg-card space-y-4">
+        {/* PRN Database Check */}
+        <div className="premium-card p-6 bg-card space-y-4">
+          <div className="flex justify-between items-center">
             <h3 className="text-sm font-bold tracking-wider uppercase text-zinc-500 flex items-center gap-1.5">
-              <User className="w-4 h-4 text-blue-500" />
-              <span>Student Profile Details</span>
+              <ShieldCheck className="w-4 h-4 text-primary" />
+              <span>College Database Verification</span>
             </h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-              <div className="space-y-1">
-                <span className="text-muted">Full Name</span>
-                <div className="font-bold text-foreground bg-zinc-100/50 dark:bg-zinc-900/50 border border-border/40 rounded-lg p-2.5">
-                  {user.name}
-                </div>
-              </div>
-              <div className="space-y-1">
-                <span className="text-muted">PRN (Student ID)</span>
-                <div className="font-bold text-foreground bg-zinc-100/50 dark:bg-zinc-900/50 border border-border/40 rounded-lg p-2.5 font-mono">
-                  {user.prn || 'Not Configured'}
-                </div>
-              </div>
-              <div className="space-y-1">
-                <span className="text-muted">Email Address</span>
-                <div className="font-bold text-foreground bg-zinc-100/50 dark:bg-zinc-900/50 border border-border/40 rounded-lg p-2.5">
-                  {user.email}
-                </div>
-              </div>
-              <div className="space-y-1">
-                <span className="text-muted">Department & Semester</span>
-                <div className="font-bold text-foreground bg-zinc-100/50 dark:bg-zinc-900/50 border border-border/40 rounded-lg p-2.5">
-                  {user.department || 'N/A'} - Sem {user.semester || 'N/A'}
-                </div>
-              </div>
-            </div>
+            {prnVerified && (
+              <span className="text-[9px] uppercase font-bold tracking-widest text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                Verified Student
+              </span>
+            )}
           </div>
 
-          {/* Additional Required Fields */}
-          <div className="premium-card p-6 bg-card space-y-4">
-            <h3 className="text-sm font-bold tracking-wider uppercase text-zinc-500 flex items-center gap-1.5">
-              <Phone className="w-4 h-4 text-blue-500" />
-              <span>Required Inputs</span>
-            </h3>
-
-            {/* Emergency Contact */}
-            <div className="space-y-1.5 text-xs text-left">
-              <label className="font-medium text-muted">Emergency Contact Number *</label>
-              <input
-                type="tel"
-                required
-                value={emergencyContact}
-                onChange={(e) => setEmergencyContact(e.target.value)}
-                placeholder="Parent/Guardian Contact number"
-                className="w-full bg-background border border-border rounded-xl px-3 py-2.5 text-xs shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 text-foreground"
-              />
-            </div>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={prnInput}
+              onChange={(e) => {
+                setPrnInput(e.target.value);
+                setPrnVerified(false);
+                setPrnCheckFailed(false);
+              }}
+              placeholder="Enter your PRN (e.g. PRN202410293)"
+              className="flex-1 bg-background border border-border rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-primary text-foreground font-mono"
+            />
+            <button
+              type="button"
+              onClick={handleVerifyPRN}
+              disabled={isVerifyingPrn || prnInput.trim() === ''}
+              className="px-5 rounded-xl bg-primary hover:bg-rose-600 text-white text-xs font-bold transition-colors disabled:opacity-50"
+            >
+              {isVerifyingPrn ? 'Checking...' : 'Verify PRN'}
+            </button>
           </div>
 
-          {/* Team Registration Section */}
-          {event.max_team_size > 1 && (
-            <div className="premium-card p-6 bg-card space-y-5">
-              <div className="flex justify-between items-center border-b border-border/60 pb-3">
+          {/* Friendly fail message with Contact Admin button */}
+          {prnCheckFailed && (
+            <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-left text-xs text-red-500 space-y-2.5">
+              <p className="font-semibold">PRN Verification Failed</p>
+              <p className="text-[11px] leading-normal text-zinc-400">
+                We couldn't locate your PRN ID in the central college database catalog. If this is a mistake, please reach out to the campus administration board.
+              </p>
+              <a
+                href="mailto:admin@college.edu?subject=PRN Registry Issue"
+                className="inline-block px-4 py-2 rounded-lg bg-red-500 text-white font-bold text-[10px] uppercase hover:bg-red-600 transition-colors"
+              >
+                Contact Admin
+              </a>
+            </div>
+          )}
+        </div>
+
+        {/* Registration Form (Only shows details when PRN is verified) */}
+        <AnimatePresence>
+          {prnVerified && (
+            <motion.form 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              onSubmit={handleSubmit} 
+              className="space-y-6"
+            >
+              
+              {/* Pre-filled fields like Google Forms */}
+              <div className="premium-card p-6 bg-card space-y-4">
                 <h3 className="text-sm font-bold tracking-wider uppercase text-zinc-500 flex items-center gap-1.5">
-                  <Users className="w-4 h-4 text-blue-500" />
-                  <span>Team Composition</span>
+                  <User className="w-4 h-4 text-primary" />
+                  <span>Student Profile (Auto-filled)</span>
                 </h3>
-                <span className="text-[10px] text-zinc-400">
-                  Max team size: {event.max_team_size} members
-                </span>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                  <div className="space-y-1">
+                    <span className="text-muted">Student Name</span>
+                    <input
+                      type="text"
+                      disabled
+                      value={user.name}
+                      className="w-full bg-zinc-100/50 dark:bg-zinc-900/50 border border-border/40 rounded-xl px-3 py-2.5 text-zinc-500 cursor-not-allowed"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-muted">College Email</span>
+                    <input
+                      type="email"
+                      disabled
+                      value={user.email}
+                      className="w-full bg-zinc-100/50 dark:bg-zinc-900/50 border border-border/40 rounded-xl px-3 py-2.5 text-zinc-500 cursor-not-allowed"
+                    />
+                  </div>
+                </div>
               </div>
 
-              {/* Team Name */}
-              <div className="space-y-1.5 text-xs text-left">
-                <label className="font-medium text-muted">Team Name *</label>
-                <input
-                  type="text"
-                  required
-                  value={teamName}
-                  onChange={(e) => setTeamName(e.target.value)}
-                  placeholder="e.g. Code Gladiators"
-                  className="w-full bg-background border border-border rounded-xl px-3 py-2.5 text-xs shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 text-foreground"
-                />
+              {/* Emergency Contact field */}
+              <div className="premium-card p-6 bg-card space-y-4">
+                <h3 className="text-sm font-bold tracking-wider uppercase text-zinc-500 flex items-center gap-1.5">
+                  <Phone className="w-4 h-4 text-primary" />
+                  <span>Required Information</span>
+                </h3>
+
+                <div className="space-y-1.5 text-xs text-left">
+                  <label className="font-medium text-muted">Emergency Contact Number *</label>
+                  <input
+                    type="tel"
+                    required
+                    value={emergencyContact}
+                    onChange={(e) => setEmergencyContact(e.target.value)}
+                    placeholder="Parent/Guardian Contact number"
+                    className="w-full bg-background border border-border rounded-xl px-3 py-2.5 text-xs shadow-sm focus:outline-none focus:ring-1 focus:ring-primary text-foreground"
+                  />
+                </div>
               </div>
 
-              {/* Team Members List */}
-              {teamMembers.length > 0 && (
-                <div className="space-y-4 pt-2">
-                  <span className="text-xs font-bold text-zinc-400">Added Team Members</span>
+              {/* Team Registration */}
+              {event.max_team_size > 1 && (
+                <div className="premium-card p-6 bg-card space-y-5">
+                  <div className="flex justify-between items-center border-b border-border/60 pb-3">
+                    <h3 className="text-sm font-bold tracking-wider uppercase text-zinc-500 flex items-center gap-1.5">
+                      <Users className="w-4 h-4 text-primary" />
+                      <span>Team Composition</span>
+                    </h3>
+                    <span className="text-[10px] text-zinc-400">
+                      Max: {event.max_team_size} members
+                    </span>
+                  </div>
+
+                  <div className="space-y-1.5 text-xs text-left">
+                    <label className="font-medium text-muted">Team Name *</label>
+                    <input
+                      type="text"
+                      required
+                      value={teamName}
+                      onChange={(e) => setTeamName(e.target.value)}
+                      placeholder="e.g. Pixel Pioneers"
+                      className="w-full bg-background border border-border rounded-xl px-3 py-2.5 text-xs shadow-sm focus:outline-none focus:ring-1 focus:ring-primary text-foreground"
+                    />
+                  </div>
+
                   {teamMembers.map((member, i) => (
-                    <div key={i} className="p-4 rounded-24 border border-border/80 bg-zinc-50 dark:bg-zinc-900/50 space-y-3 relative text-left">
+                    <div key={i} className="p-4 rounded-xl border border-border/80 bg-zinc-50 dark:bg-zinc-900/50 space-y-3 relative text-left">
                       <button
                         type="button"
                         onClick={() => handleRemoveMember(i)}
                         className="absolute top-3.5 right-3.5 p-1 rounded hover:bg-red-500/10 text-zinc-400 hover:text-red-500 transition-colors"
-                        title="Remove member"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -417,7 +504,7 @@ export default function EventRegisterClient({ event }: { event: CollegeEvent }) 
                           value={member.name}
                           onChange={(e) => handleMemberChange(i, 'name', e.target.value)}
                           placeholder="Member Full Name"
-                          className="bg-background border border-border rounded-lg px-3 py-2 text-xs focus:outline-none"
+                          className="bg-background border border-border rounded-lg px-3 py-2 focus:outline-none"
                         />
                         <input
                           type="text"
@@ -425,7 +512,7 @@ export default function EventRegisterClient({ event }: { event: CollegeEvent }) 
                           value={member.prn}
                           onChange={(e) => handleMemberChange(i, 'prn', e.target.value)}
                           placeholder="PRN ID"
-                          className="bg-background border border-border rounded-lg px-3 py-2 text-xs focus:outline-none"
+                          className="bg-background border border-border rounded-lg px-3 py-2 focus:outline-none"
                         />
                         <input
                           type="email"
@@ -433,7 +520,7 @@ export default function EventRegisterClient({ event }: { event: CollegeEvent }) 
                           value={member.email}
                           onChange={(e) => handleMemberChange(i, 'email', e.target.value)}
                           placeholder="College Email"
-                          className="bg-background border border-border rounded-lg px-3 py-2 text-xs focus:outline-none"
+                          className="bg-background border border-border rounded-lg px-3 py-2 focus:outline-none"
                         />
                         <input
                           type="tel"
@@ -441,54 +528,53 @@ export default function EventRegisterClient({ event }: { event: CollegeEvent }) 
                           value={member.phone}
                           onChange={(e) => handleMemberChange(i, 'phone', e.target.value)}
                           placeholder="Mobile Number"
-                          className="bg-background border border-border rounded-lg px-3 py-2 text-xs focus:outline-none"
+                          className="bg-background border border-border rounded-lg px-3 py-2 focus:outline-none"
                         />
                       </div>
                     </div>
                   ))}
+
+                  {teamMembers.length + 1 < event.max_team_size && (
+                    <button
+                      type="button"
+                      onClick={handleAddMember}
+                      className="w-full py-2.5 rounded-xl border border-dashed border-border hover:bg-zinc-100 dark:hover:bg-zinc-800/40 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                    >
+                      <Plus className="w-4 h-4" /> Add Team Member
+                    </button>
+                  )}
                 </div>
               )}
 
-              {/* Add member button */}
-              {teamMembers.length + 1 < event.max_team_size && (
+              {/* Checkout / Registration submission */}
+              <div className="premium-card p-6 bg-card space-y-4">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-muted">Total Registration Price</span>
+                  <span className="text-2xl font-extrabold text-primary">
+                    {event.price === 0 ? 'FREE' : formatCurrency(event.price)}
+                  </span>
+                </div>
+
                 <button
-                  type="button"
-                  onClick={handleAddMember}
-                  className="w-full py-2.5 rounded-xl border border-dashed border-border hover:bg-zinc-100 dark:hover:bg-zinc-800/40 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full py-3.5 rounded-24 bg-primary hover:bg-rose-600 text-white font-bold text-sm shadow-md shadow-primary/20 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
                 >
-                  <Plus className="w-4 h-4" /> Add Team Member
+                  {isSubmitting ? (
+                    <div className="w-5 h-5 border-2 border-white/35 border-t-white rounded-full animate-spin" />
+                  ) : isWaitlisted ? (
+                    <>Submit Registration (Waitlist) <Clock className="w-4.5 h-4.5" /></>
+                  ) : event.price === 0 ? (
+                    <>Complete Free Registration <Sparkles className="w-4.5 h-4.5" /></>
+                  ) : (
+                    <>Proceed to Cashfree Checkout <CreditCard className="w-4.5 h-4.5" /></>
+                  )}
                 </button>
-              )}
-            </div>
+              </div>
+
+            </motion.form>
           )}
-
-          {/* Pricing & Checkout Panel */}
-          <div className="premium-card p-6 bg-card space-y-4">
-            <div className="flex justify-between items-center text-xs">
-              <span className="text-muted">Total Registration Price</span>
-              <span className="text-2xl font-extrabold text-blue-500">
-                {event.price === 0 ? 'FREE' : formatCurrency(event.price)}
-              </span>
-            </div>
-
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full py-3.5 rounded-24 bg-primary hover:bg-blue-600 text-white font-bold text-sm shadow-md shadow-blue-500/25 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
-            >
-              {isSubmitting ? (
-                <div className="w-5 h-5 border-2 border-white/35 border-t-white rounded-full animate-spin" />
-              ) : isWaitlisted ? (
-                <>Submit Registration (Waitlist) <Clock className="w-4.5 h-4.5" /></>
-              ) : event.price === 0 ? (
-                <>Complete Free Registration <Sparkles className="w-4.5 h-4.5" /></>
-              ) : (
-                <>Proceed to Cashfree Checkout <CreditCard className="w-4.5 h-4.5" /></>
-              )}
-            </button>
-          </div>
-
-        </form>
+        </AnimatePresence>
       </div>
 
       {/* Cashfree Sandbox Payment Simulator Modal */}
@@ -508,7 +594,7 @@ export default function EventRegisterClient({ event }: { event: CollegeEvent }) 
                   <h3 className="font-extrabold text-sm text-foreground">Cashfree Sandbox Simulator</h3>
                   <p className="text-[10px] text-zinc-500">Secure Order Verification Payout flow</p>
                 </div>
-                <span className="px-2 py-0.5 rounded bg-blue-500/20 text-blue-500 text-[9px] font-bold uppercase">
+                <span className="px-2 py-0.5 rounded bg-primary/20 text-primary text-[9px] font-bold uppercase">
                   Sandbox
                 </span>
               </div>
@@ -516,12 +602,12 @@ export default function EventRegisterClient({ event }: { event: CollegeEvent }) 
               <div className="space-y-1">
                 <span className="text-[10px] uppercase font-semibold text-zinc-400">Merchant Account billing</span>
                 <div className="text-xl font-bold">{event.title}</div>
-                <div className="text-2xl font-extrabold text-blue-500 mt-1">
+                <div className="text-2xl font-extrabold text-primary mt-1">
                   {formatCurrency(event.price)}
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/20 flex gap-2.5 text-left text-xs text-blue-600 dark:text-blue-400 leading-normal">
+              <div className="p-3.5 rounded-xl bg-primary/10 border border-primary/20 flex gap-2.5 text-left text-xs text-primary leading-normal">
                 <Info className="w-4 h-4 shrink-0 mt-0.5" />
                 <span>
                   No cashfree credentials are configured in `.env.local`. Simulated transactions trigger local webhook callbacks to auto-generate tickets.

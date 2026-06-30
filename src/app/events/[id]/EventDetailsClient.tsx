@@ -8,10 +8,10 @@ import { useAuth } from '@/providers/AuthProvider';
 import { formatCurrency, formatDateTime } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { 
-  Copy as CopyIcon, Image as ImageIcon2, Globe as GlobeIcon, ShieldAlert as ShieldAlertIcon,
-  Calendar as CalendarIcon, MapPin as MapPinIcon, Users as UsersIcon, Heart as HeartIcon, Share2 as Share2Icon, 
-  ArrowLeft as ArrowLeftIcon, Clock as ClockIcon, Award as AwardIcon, Shield as ShieldIcon, Check as CheckIcon, 
-  ChevronRight as ChevronRightIcon, ArrowUpRight as ArrowUpRightIcon, HelpCircle as HelpCircleIcon, CheckCircle2 as CheckCircle2Icon
+  Copy as CopyIcon, Image as ImageIcon2, Globe as GlobeIcon,
+  Calendar as CalendarIcon, MapPin as MapPinIcon, Heart as HeartIcon, Share2 as Share2Icon, 
+  ArrowLeft as ArrowLeftIcon, Award as AwardIcon, Check as CheckIcon, 
+  ChevronRight as ChevronRightIcon, Play as PlayIcon
 } from 'lucide-react';
 
 export default function EventDetailsClient({ event }: { event: CollegeEvent }) {
@@ -67,7 +67,7 @@ export default function EventDetailsClient({ event }: { event: CollegeEvent }) {
   const hasStaffAccess = user && ['event_organizer', 'admin', 'super_admin'].includes(user.role);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col text-left">
+    <div className="min-h-screen bg-background flex flex-col text-left pb-28 md:pb-6">
       <DashboardNavbar />
 
       {/* Main Container */}
@@ -79,7 +79,7 @@ export default function EventDetailsClient({ event }: { event: CollegeEvent }) {
             href="/events" 
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted hover:text-foreground transition-colors"
           >
-            <ArrowLeftIcon className="w-3.5 h-3.5" /> Back to Events
+            <ArrowLeftIcon className="w-3.5 h-3.5" /> Back to Catalog
           </Link>
 
           {hasStaffAccess && (
@@ -101,21 +101,21 @@ export default function EventDetailsClient({ event }: { event: CollegeEvent }) {
           {/* Left Columns (Details / Content) */}
           <div className="lg:col-span-2 space-y-6">
             {/* Banner Card */}
-            <div className="relative aspect-[21/9] rounded-[28px] overflow-hidden border border-border shadow-md">
+            <div className="relative aspect-[21/9] rounded-[20px] overflow-hidden border border-border shadow-md">
               <img 
                 src={event.banner_url} 
                 alt={event.title} 
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent" />
               <div className="absolute bottom-5 left-5 right-5 flex justify-between items-end">
                 <div className="space-y-1.5">
                   <div className="flex gap-2">
-                    <span className="px-2 py-0.5 rounded-md bg-blue-500 text-white text-[10px] font-bold tracking-wider uppercase border border-blue-400/20">
+                    <span className="px-2.5 py-0.5 rounded-md bg-primary text-white text-[10px] font-bold tracking-wider uppercase">
                       {event.category}
                     </span>
-                    <span className="px-2 py-0.5 rounded-md bg-pink-500/20 text-pink-500 border border-pink-500/30 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
-                      <GlobeIcon className="w-3.5 h-3.5" /> Public Visibility
+                    <span className="px-2.5 py-0.5 rounded-md bg-white/10 text-white backdrop-blur-sm border border-white/20 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
+                      <GlobeIcon className="w-3.5 h-3.5" /> Public Access
                     </span>
                   </div>
                   <h1 className="text-xl md:text-3xl font-extrabold text-white mt-2 leading-tight">
@@ -155,19 +155,19 @@ export default function EventDetailsClient({ event }: { event: CollegeEvent }) {
                 {/* Keynote Speakers */}
                 {event.speakers && event.speakers.length > 0 && (
                   <div className="space-y-4">
-                    <h3 className="text-lg font-bold tracking-tight">Keynote Speakers</h3>
+                    <h3 className="text-lg font-bold tracking-tight">Featured Speakers</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {event.speakers.map((speaker, i) => (
-                        <div key={i} className="premium-card p-4 flex gap-4 items-center bg-card/60 hover:border-blue-500/20 transition-all">
+                        <div key={i} className="premium-card p-4 flex gap-4 items-center bg-card/60 hover:border-primary/20 transition-all">
                           <img
                             src={speaker.avatarUrl}
                             alt={speaker.name}
-                            className="w-12 h-12 rounded-2xl object-cover border border-border"
+                            className="w-12 h-12 rounded-[20px] object-cover border border-border"
                           />
                           <div className="text-left">
                             <h4 className="font-bold text-sm">{speaker.name}</h4>
                             <p className="text-[10px] text-zinc-500">{speaker.designation}</p>
-                            <p className="text-[10px] text-blue-500 font-semibold mt-0.5">{speaker.company}</p>
+                            <p className="text-[10px] text-primary font-semibold mt-0.5">{speaker.company}</p>
                           </div>
                         </div>
                       ))}
@@ -192,7 +192,7 @@ export default function EventDetailsClient({ event }: { event: CollegeEvent }) {
                             <h4 className="font-bold text-sm">{item.title}</h4>
                             <p className="text-xs text-muted leading-normal">{item.description}</p>
                             {item.speaker && (
-                              <span className="inline-block text-[9px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-500 font-semibold mt-1">
+                              <span className="inline-block text-[9px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-semibold mt-1">
                                 Speaker: {item.speaker}
                               </span>
                             )}
@@ -209,8 +209,8 @@ export default function EventDetailsClient({ event }: { event: CollegeEvent }) {
                     <h3 className="text-lg font-bold tracking-tight">Sponsors & Partners</h3>
                     <div className="flex flex-wrap gap-4 items-center">
                       {event.sponsors.map((s, idx) => (
-                        <div key={idx} className="premium-card px-5 py-3.5 bg-card/45 flex items-center justify-center gap-2 border border-border/60 hover:border-blue-500/15 transition-all">
-                          <div className="w-4 h-4 rounded-full bg-blue-500/10 flex items-center justify-center text-[9px] font-extrabold text-blue-500">★</div>
+                        <div key={idx} className="premium-card px-5 py-3.5 bg-card/45 flex items-center justify-center gap-2 border border-border/60 hover:border-primary/15 transition-all">
+                          <div className="w-4 h-4 rounded-full bg-primary/10 flex items-center justify-center text-[9px] font-extrabold text-primary">★</div>
                           <span className="text-xs font-bold uppercase text-zinc-500">{s.name}</span>
                         </div>
                       ))}
@@ -226,7 +226,7 @@ export default function EventDetailsClient({ event }: { event: CollegeEvent }) {
                   </h3>
                   <div className="grid grid-cols-3 gap-3.5">
                     {galleryImages.map((src, i) => (
-                      <div key={i} className="aspect-video rounded-2xl overflow-hidden border border-border bg-zinc-900 shadow-sm relative group">
+                      <div key={i} className="aspect-video rounded-[20px] overflow-hidden border border-border bg-zinc-900 shadow-sm relative group">
                         <img 
                           src={src} 
                           alt="Gallery item" 
@@ -240,10 +240,10 @@ export default function EventDetailsClient({ event }: { event: CollegeEvent }) {
                 {/* Venue Map */}
                 <div className="premium-card p-6 bg-card space-y-4">
                   <h3 className="text-sm font-bold tracking-wider uppercase text-zinc-500">Venue Map Location</h3>
-                  <div className="aspect-[21/9] rounded-2xl bg-zinc-100 dark:bg-zinc-900 border border-border flex items-center justify-center relative overflow-hidden group">
+                  <div className="aspect-[21/9] rounded-[20px] bg-zinc-100 dark:bg-zinc-900 border border-border flex items-center justify-center relative overflow-hidden group">
                     <div className="absolute inset-0 bg-grid-pattern opacity-40" />
-                    <div className="absolute w-8 h-8 rounded-full bg-blue-500/20 animate-ping" />
-                    <div className="w-4 h-4 rounded-full bg-blue-500 border-2 border-white shadow-md relative z-10" />
+                    <div className="absolute w-8 h-8 rounded-full bg-primary/20 animate-ping" />
+                    <div className="w-4 h-4 rounded-full bg-primary border-2 border-white shadow-md relative z-10" />
                     
                     <div className="absolute bottom-3 left-3 bg-black/80 text-white text-[10px] px-2.5 py-1 rounded-lg border border-white/10 font-medium">
                       GPS: {event.location_coordinates?.lat || '19.07'}, {event.location_coordinates?.lng || '72.87'}
@@ -281,12 +281,12 @@ export default function EventDetailsClient({ event }: { event: CollegeEvent }) {
                     <img
                       src={speaker.avatarUrl}
                       alt={speaker.name}
-                      className="w-12 h-12 rounded-xl object-cover"
+                      className="w-12 h-12 rounded-[20px] object-cover"
                     />
                     <div className="text-left">
                       <h4 className="font-bold text-xs">{speaker.name}</h4>
                       <p className="text-[10px] text-zinc-500">{speaker.designation}</p>
-                      <p className="text-[10px] text-blue-500 font-semibold mt-0.5">{speaker.company}</p>
+                      <p className="text-[10px] text-primary font-semibold mt-0.5">{speaker.company}</p>
                     </div>
                   </div>
                 ))}
@@ -300,9 +300,9 @@ export default function EventDetailsClient({ event }: { event: CollegeEvent }) {
             <div className="premium-card p-6 bg-card sticky top-24 space-y-6 shadow-md border-border/90">
               
               {/* Event Price details */}
-              <div className="space-y-1">
-                <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Ticket Price</span>
-                <div className="text-3xl font-extrabold text-blue-500">
+              <div className="space-y-1 text-left">
+                <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Pass Price</span>
+                <div className="text-3xl font-extrabold text-primary">
                   {event.price === 0 ? 'FREE' : formatCurrency(event.price)}
                 </div>
                 {event.is_paid && (
@@ -348,7 +348,7 @@ export default function EventDetailsClient({ event }: { event: CollegeEvent }) {
                 ) : (
                   <Link
                     href={`/events/${event.id}/register`}
-                    className="w-full py-3.5 rounded-24 bg-primary hover:bg-blue-600 text-white font-semibold text-sm transition-all shadow-md shadow-blue-500/25 flex items-center justify-center gap-1.5"
+                    className="w-full py-3.5 rounded-24 bg-primary hover:bg-rose-600 text-white font-semibold text-sm transition-all shadow-md shadow-primary/20 flex items-center justify-center gap-1.5"
                   >
                     Register Now <ChevronRightIcon className="w-4 h-4" />
                   </Link>
@@ -365,7 +365,7 @@ export default function EventDetailsClient({ event }: { event: CollegeEvent }) {
                     }`}
                   >
                     <HeartIcon className={`w-4.5 h-4.5 ${liked ? 'fill-rose-500' : ''}`} />
-                    {liked ? 'Liked' : 'Like'}
+                    {liked ? 'Saved' : 'Save'}
                   </button>
 
                   {/* Share Button */}
@@ -408,6 +408,24 @@ export default function EventDetailsClient({ event }: { event: CollegeEvent }) {
         </div>
 
       </div>
+
+      {/* Sticky Bottom Bar on Mobile for Booking */}
+      {!deadlinePassed && (
+        <div className="md:hidden fixed bottom-14 left-0 right-0 z-30 bg-card/95 backdrop-blur-md border-t border-border px-6 py-3.5 flex justify-between items-center shadow-lg safe-bottom text-left">
+          <div className="text-left">
+            <span className="text-[10px] text-zinc-500 block uppercase font-bold tracking-wider">Pass Price</span>
+            <span className="text-base font-extrabold text-primary">
+              {event.price === 0 ? 'FREE' : formatCurrency(event.price)}
+            </span>
+          </div>
+          <Link
+            href={`/events/${event.id}/register`}
+            className="px-6 py-2.5 rounded-24 bg-primary text-white font-bold text-xs shadow-md shadow-primary/20 flex items-center gap-1.5"
+          >
+            Register Now <ChevronRightIcon className="w-4 h-4" />
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

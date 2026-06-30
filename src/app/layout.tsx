@@ -4,6 +4,7 @@ import './globals.css';
 import { ThemeProvider } from '@/providers/ThemeProvider';
 import { AuthProvider } from '@/providers/AuthProvider';
 import RoleSimulator from '@/components/RoleSimulator';
+import BottomNavMobile from '@/components/BottomNavMobile';
 
 const outfit = Outfit({
   variable: '--font-outfit',
@@ -30,12 +31,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full scroll-smooth select-none">
-      <body className={`${outfit.variable} ${jetbrainsMono.variable} font-sans min-h-full flex flex-col antialiased`}>
+      <body className={`${outfit.variable} ${jetbrainsMono.variable} font-sans min-h-full flex flex-col antialiased pb-16 md:pb-0`}>
         <ThemeProvider>
           <AuthProvider>
             <main className="flex-1 flex flex-col">
               {children}
             </main>
+            <BottomNavMobile />
             <RoleSimulator />
           </AuthProvider>
         </ThemeProvider>

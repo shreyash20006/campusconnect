@@ -7,9 +7,8 @@ import DashboardNavbar from '@/components/DashboardNavbar';
 import { useAuth } from '@/providers/AuthProvider';
 import { Ticket, MOCK_EVENTS } from '@/lib/data';
 import { 
-  ArrowLeft, Calendar, QrCode, Download, 
-  Share2, CalendarDays, CheckCircle2, AlertTriangle,
-  Info, Check, MapPin, Sparkles, Printer
+  ArrowLeft, CalendarDays, CheckCircle2, AlertTriangle,
+  Info, Check, Share2, Printer
 } from 'lucide-react';
 import { formatCurrency, formatDateTime } from '@/lib/utils';
 
@@ -25,7 +24,6 @@ export default function TicketClient({ ticketId }: { ticketId: string }) {
   useEffect(() => {
     if (!user) return;
 
-    // Fetch ticket from local storage or mock fallback
     const localTicketsKey = `cc_tickets_${user.id}`;
     const storedTickets = localStorage.getItem(localTicketsKey);
     let allTickets: Ticket[] = [];
@@ -34,11 +32,9 @@ export default function TicketClient({ ticketId }: { ticketId: string }) {
       allTickets = JSON.parse(storedTickets);
     }
 
-    // Try finding by ID or ticket_id code
     let found = allTickets.find(t => t.id === ticketId || t.ticket_id === ticketId);
 
     if (!found) {
-      // Create a fallback ticket using first mock event for testing
       const firstEvent = MOCK_EVENTS[0];
       found = {
         id: ticketId,
@@ -107,13 +103,11 @@ export default function TicketClient({ ticketId }: { ticketId: string }) {
     window.print();
   };
 
-  // Google Calendar URL Generator
   const getGoogleCalendarUrl = () => {
     const title = encodeURIComponent(event.title);
     const details = encodeURIComponent(`Your ticket code is ${ticket.ticket_id}. Event details: ${event.short_description}`);
     const location = encodeURIComponent(event.venue);
     
-    // Format date to ISO string without symbols (YYYYMMDDTHHMMSSZ)
     const formatCalDate = (dStr: string) => {
       const d = new Date(dStr);
       return d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
@@ -125,7 +119,6 @@ export default function TicketClient({ ticketId }: { ticketId: string }) {
     return `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${details}&location=${location}`;
   };
 
-  // QR Code URL pointing to checkin verification endpoint
   const checkinUrl = typeof window !== 'undefined' 
     ? `${window.location.origin}/admin/scanner?ticket_id=${ticket.ticket_id}`
     : `http://localhost:3000/admin/scanner?ticket_id=${ticket.ticket_id}`;
@@ -134,14 +127,12 @@ export default function TicketClient({ ticketId }: { ticketId: string }) {
 
   return (
     <div className="min-h-screen bg-background flex flex-col print:bg-white print:text-black">
-      {/* Hide navbar on print */}
       <div className="print:hidden">
         <DashboardNavbar />
       </div>
 
       <div className="flex-1 max-w-md w-full mx-auto px-6 py-8 space-y-6">
         
-        {/* Back link - hide on print */}
         <Link 
           href="/dashboard" 
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted hover:text-foreground transition-colors print:hidden"
@@ -150,7 +141,7 @@ export default function TicketClient({ ticketId }: { ticketId: string }) {
         </Link>
 
         {/* Premium Wallet Pass Ticket */}
-        <div className="relative border border-zinc-200 dark:border-zinc-800 rounded-3xl overflow-hidden shadow-2xl bg-card transition-all text-left">
+        <div className="relative border border-border rounded-[20px] overflow-hidden shadow-2xl bg-card transition-all text-left">
           
           {/* Ticket Header Banner */}
           <div className="relative aspect-[21/9] bg-zinc-950 overflow-hidden">
@@ -161,7 +152,7 @@ export default function TicketClient({ ticketId }: { ticketId: string }) {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-transparent" />
             <div className="absolute top-4 left-4">
-              <span className="px-2 py-0.5 rounded-lg bg-blue-500 text-white text-[9px] font-bold tracking-wider uppercase">
+              <span className="px-2.5 py-0.5 rounded-md bg-primary text-white text-[9px] font-bold tracking-wider uppercase">
                 {event.category}
               </span>
             </div>
@@ -189,22 +180,17 @@ export default function TicketClient({ ticketId }: { ticketId: string }) {
             </div>
           </div>
 
-          {/* DASHED SEPARATOR (Perforated ticket cutout look) */}
+          {/* Perforated ticket look */}
           <div className="relative flex items-center justify-between">
-            {/* Left Cutout Circle */}
-            <div className="w-6 h-6 rounded-full bg-background border-r border-zinc-200 dark:border-zinc-800 -ml-3 z-10 print:bg-white" />
-            
-            {/* Dashed line */}
-            <div className="flex-1 border-t border-dashed border-zinc-200 dark:border-zinc-800" />
-            
-            {/* Right Cutout Circle */}
-            <div className="w-6 h-6 rounded-full bg-background border-l border-zinc-200 dark:border-zinc-800 -mr-3 z-10 print:bg-white" />
+            <div className="w-6 h-6 rounded-full bg-background border-r border-border -ml-3 z-10 print:bg-white" />
+            <div className="flex-1 border-t border-dashed border-border" />
+            <div className="w-6 h-6 rounded-full bg-background border-l border-border -mr-3 z-10 print:bg-white" />
           </div>
 
-          {/* Lower Ticket Segment (QR Code and status details) */}
+          {/* Lower Ticket Segment */}
           <div className="p-6 flex flex-col items-center space-y-5">
             {/* QR Code */}
-            <div className="p-3 bg-white border-2 border-zinc-100 rounded-2xl shadow-inner inline-block">
+            <div className="p-3 bg-white border border-border rounded-xl shadow-inner inline-block">
               <img 
                 src={qrCodeImgSrc} 
                 alt="Ticket QR Code" 
@@ -236,20 +222,19 @@ export default function TicketClient({ ticketId }: { ticketId: string }) {
           </div>
         </div>
 
-        {/* Action Widgets - Hide on print */}
+        {/* Action Widgets */}
         <div className="space-y-2.5 print:hidden">
           
           <a
             href={getGoogleCalendarUrl()}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full py-3 rounded-24 border border-border bg-card hover:bg-zinc-100/50 dark:hover:bg-zinc-800/40 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
+            className="w-full py-3 rounded-24 border border-border bg-card hover:bg-zinc-100/50 dark:hover:bg-zinc-800/40 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
           >
-            <CalendarDays className="w-4.5 h-4.5 text-blue-500" /> Add to Google Calendar
+            <CalendarDays className="w-4.5 h-4.5 text-primary" /> Add to Google Calendar
           </a>
 
           <div className="grid grid-cols-2 gap-2">
-            {/* Copy Share Link */}
             <button
               onClick={handleShare}
               className={`py-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
@@ -260,7 +245,6 @@ export default function TicketClient({ ticketId }: { ticketId: string }) {
               {shared ? 'Link Copied!' : 'Share Pass'}
             </button>
 
-            {/* Print Ticket */}
             <button
               onClick={handlePrint}
               className="py-3 rounded-xl border border-border bg-card hover:bg-zinc-100/50 dark:hover:bg-zinc-800/40 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors text-muted-foreground cursor-pointer"
@@ -269,7 +253,7 @@ export default function TicketClient({ ticketId }: { ticketId: string }) {
             </button>
           </div>
 
-          <div className="flex gap-2 p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-left text-[11px] text-blue-600 dark:text-blue-400 leading-normal">
+          <div className="flex gap-2 p-3.5 rounded-xl bg-primary/10 border border-primary/20 text-left text-[11px] text-primary leading-normal">
             <Info className="w-4 h-4 shrink-0 mt-0.5" />
             <span>
               Show this QR code to any volunteer at the venue doors to mark your attendance and claim your verified certificates.
